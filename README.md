@@ -1,17 +1,21 @@
+# INTRO
+Fork of [mekhontsev/imgui_md](https://github.com/mekhontsev/imgui_md) with addition and fixes, read below for the details.
+
 # imgui_md
 Markdown renderer for [Dear ImGui](https://github.com/ocornut/imgui) using [MD4C](https://github.com/mity/md4c) parser.
 
-C++11 or above
+C++11 or above.
+ImGui 1.92.6 or above.
 
 imgui_md currently supports the following markdown functionality:
 
   * Wrapped text
-  * Headers 
+  * Headers
   * Emphasis
   * Ordered and unordered list, sub-lists
   * Link
   * Image
-  * Horizontal rule	
+  * Horizontal rule
   * Table
   * Underline
   * Strikethrough
@@ -38,7 +42,7 @@ extern ImFont* g_font_bold;
 extern ImFont* g_font_bold_large;
 extern ImTextureID g_texture1;
 
-struct my_markdown : public imgui_md 
+struct my_markdown : public imgui_md
 {
 	ImFont* get_font() const override
 	{
@@ -74,7 +78,7 @@ struct my_markdown : public imgui_md
 		nfo.col_border = { 0,0,0,0 };
 		return true;
 	}
-	
+
 	void html_div(const std::string& dclass, bool e) override
 	{
 		if (dclass == "red") {
@@ -154,5 +158,6 @@ Border | **is not** | visible
 
 [Martin Mitáš for MD4C](https://github.com/mity/md4c)
 
-[Omar Cornut for Dear ImGui](https://github.com/ocornut/imgui)  
+[Omar Cornut for Dear ImGui](https://github.com/ocornut/imgui)
 
+[Dmitry Mekhontsev for original version of imgui_md](https://github.com/mekhontsev/imgui_md)
