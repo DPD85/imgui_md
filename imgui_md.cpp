@@ -293,7 +293,8 @@ void imgui_md::set_href(bool e, const MD_ATTRIBUTE& src)
 void imgui_md::set_font(bool e)
 {
 	if (e) {
-		ImGui::PushFont(get_font());
+		ImFont *font = get_font();
+		ImGui::PushFont(font, font != nullptr ? font->LegacySize : 0.0f);
 	} else {
 		ImGui::PopFont();
 	}
@@ -353,7 +354,7 @@ void imgui_md::SPAN_IMG(const MD_SPAN_IMG_DETAIL* d, bool e)
 		image_info nfo;
 		if (get_image(nfo)) {
 
-			const float scale = ImGui::GetIO().FontGlobalScale;
+			const float scale  = ImGui::GetStyle().FontScaleMain;
 			nfo.size.x *= scale;
 			nfo.size.y *= scale;
 
@@ -365,7 +366,7 @@ void imgui_md::SPAN_IMG(const MD_SPAN_IMG_DETAIL* d, bool e)
 				nfo.size.y = csz.x * r;
 			}
 
-			ImGui::Image(nfo.texture_id, nfo.size, nfo.uv0, nfo.uv1, nfo.col_tint, nfo.col_border);
+			ImGui::Image(nfo.texture_id, nfo.size, nfo.uv0, nfo.uv1);
 
 			if (ImGui::IsItemHovered()) {
 
@@ -414,7 +415,7 @@ void imgui_md::SPAN_DEL(bool e)
 
 void imgui_md::render_text(const char* str, const char* str_end)
 {
-	const float scale = ImGui::GetIO().FontGlobalScale;
+	const float scale   = ImGui::GetStyle().FontScaleMain;
 	const ImGuiStyle& s = ImGui::GetStyle();
 	bool is_lf = false;
 
@@ -432,7 +433,7 @@ void imgui_md::render_text(const char* str, const char* str_end)
 				wl -= ImGui::GetCursorPosX();
 			}
 
-			te = ImGui::GetFont()->CalcWordWrapPositionA(
+			te = ImGui::GetFont()->CalcWordWrapPosition(
 				scale, str, str_end, wl);
 
 			if (te == str)++te;
@@ -779,7 +780,7 @@ ImFont* imgui_md::get_font() const
 ImVec4 imgui_md::get_color() const
 {
 	if (!m_href.empty()) {
-		return ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered];
+		return ImGui::GetStyle().Colors[ImGuiCol_TextLink];
 	}
 	return  ImGui::GetStyle().Colors[ImGuiCol_Text];
 }
@@ -790,12 +791,14 @@ bool imgui_md::get_image(image_info& nfo) const
 	//Use m_href to identify images
 	
 	//Example - Imgui font texture
+#ifdef IMGUI_HAS_TEXTURES
+	nfo.texture_id = ImGui::GetIO().Fonts->TexRef.GetTexID();
+#else
 	nfo.texture_id = ImGui::GetIO().Fonts->TexID;
+#endif
 	nfo.size = { 100,50 };
 	nfo.uv0 = { 0,0 };
 	nfo.uv1 = { 1,1 };
-	nfo.col_tint = { 1,1,1,1 };
-	nfo.col_border = { 0,0,0,0 };
 
 	return true;
 };
