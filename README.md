@@ -4,7 +4,7 @@ Fork of [mekhontsev/imgui_md](https://github.com/mekhontsev/imgui_md) with addit
 # imgui_md
 Markdown renderer for [Dear ImGui](https://github.com/ocornut/imgui) using [MD4C](https://github.com/mity/md4c) parser.
 
-C++11 or above.
+C++11 or above.<br/>
 ImGui 1.92.6 or above.
 
 imgui_md currently supports the following markdown functionality:
