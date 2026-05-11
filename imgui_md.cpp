@@ -293,8 +293,12 @@ void imgui_md::set_href(bool e, const MD_ATTRIBUTE& src)
 void imgui_md::set_font(bool e)
 {
 	if (e) {
-		ImFont *font = get_font();
-		ImGui::PushFont(font, font != nullptr ? font->LegacySize : 0.0f);
+		font_info info;
+		get_font(info);
+		if(info.font != nullptr)
+			ImGui::PushFont(info.font, info.size != 0.0f ? info.size : info.font->LegacySize);
+		else
+			ImGui::PushFont(nullptr, 0.0f);
 	} else {
 		ImGui::PopFont();
 	}
@@ -754,24 +758,30 @@ int imgui_md::print(const char* str, const char* str_end)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-ImFont* imgui_md::get_font() const
+void imgui_md::get_font(font_info &info) const
 {
-	return nullptr;//default font
+	//default font
+	info.font = nullptr;
+	//default size of the font
+	info.size = 0.0f;
 
 	//Example:
 #if 0
+	info.size = 0.0f;
+
 	if (m_is_table_header) {
-		return g_font_bold;
+		info.font = g_font_bold;
+		return;
 	}
 
 	switch (m_hlevel)
 	{
 	case 0:
-		return m_is_strong ? g_font_bold : g_font_regular;
+		info.font = m_is_strong ? g_font_bold : g_font_regular;
 	case 1:
-		return g_font_bold_large;
+		info.font = g_font_bold_large;
 	default:
-		return g_font_bold;
+		info.font = g_font_bold;
 	}
 #endif
 

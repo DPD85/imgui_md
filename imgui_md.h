@@ -89,7 +89,15 @@ protected:
 	//use m_href to identify image
 	virtual bool get_image(image_info& nfo) const;
 
-	virtual ImFont* get_font() const;
+	struct font_info
+	{
+		// use default font if null
+		ImFont *font;
+		// use default font size if 0.0f (font->LegacySize)
+		float size;
+	};
+
+	virtual void get_font(font_info &info) const;
 	virtual ImVec4 get_color() const;
 
 
