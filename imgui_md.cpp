@@ -204,7 +204,7 @@ void imgui_md::BLOCK_TABLE(const MD_BLOCK_TABLE_DETAIL*, bool e)
 			const float xmax = m_table_col_pos.back();
 			for (int i = 0; i < m_table_row_pos.size(); ++i) {
 				const float p = m_table_row_pos[i];
-				dl->AddLine(ImVec2(xmin, p), ImVec2(xmax, p), c, 
+				dl->AddLine(ImVec2(xmin, p), ImVec2(xmax, p), c,
 					i == 1 && m_table_header_highlight ? 2.0f : 1.0f);
 			}
 
@@ -270,14 +270,14 @@ void imgui_md::BLOCK_TD(const MD_BLOCK_TD_DETAIL*, bool e)
 		ImGui::SetCursorPosX(p.x);
 		if (p.y > m_table_last_pos.y)m_table_last_pos.y = p.y;
 	}
-	ImGui::TextUnformatted(""); 
-	
+	ImGui::TextUnformatted("");
+
 	if (!m_table_border && e && m_table_next_column==1 ) {
 		ImGui::SameLine(0.0f, 0.0f);
 	} else {
 		ImGui::SameLine();
 	}
-	
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -419,7 +419,6 @@ void imgui_md::SPAN_DEL(bool e)
 
 void imgui_md::render_text(const char* str, const char* str_end)
 {
-	const float scale   = ImGui::GetStyle().FontScaleMain;
 	const ImGuiStyle& s = ImGui::GetStyle();
 	bool is_lf = false;
 
@@ -438,18 +437,18 @@ void imgui_md::render_text(const char* str, const char* str_end)
 			}
 
 			te = ImGui::GetFont()->CalcWordWrapPosition(
-				scale, str, str_end, wl);
+				ImGui::GetFontSize(), str, str_end, wl);
 
 			if (te == str)++te;
 		}
 
-		
+
 		ImGui::TextUnformatted(str, te);
 
 		if (te > str && *(te - 1) == '\n') {
 			is_lf = true;
 		}
-		
+
 		if (!m_href.empty()) {
 
 			ImVec4 c;
@@ -593,7 +592,7 @@ bool imgui_md::check_html(const char* str, const char* str_end)
 void imgui_md::html_div(const std::string& dclass, bool e)
 {
 	//Example:
-#if 0 
+#if 0
 	if (dclass == "red") {
 		if (e) {
 			ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
@@ -799,7 +798,7 @@ ImVec4 imgui_md::get_color() const
 bool imgui_md::get_image(image_info& nfo) const
 {
 	//Use m_href to identify images
-	
+
 	//Example - Imgui font texture
 #ifdef IMGUI_HAS_TEXTURES
 	nfo.texture_id = ImGui::GetIO().Fonts->TexRef.GetTexID();
@@ -817,7 +816,7 @@ void imgui_md::open_url() const
 {
 	//Example:
 
-#if 0	
+#if 0
 	if (!m_is_image) {
 		SDL_OpenURL(m_href.c_str());
 	} else {
