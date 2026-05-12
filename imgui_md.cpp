@@ -54,14 +54,7 @@ imgui_md::imgui_md()
 	m_md.debug_log = nullptr;
 
 	m_md.syntax = nullptr;
-
-	////////////////////////////////////////////////////////////////////////////
-
-	m_table_last_pos = ImVec2(0, 0);
-
 }
-
-
 
 void imgui_md::BLOCK_UL(const MD_BLOCK_UL_DETAIL* d, bool e)
 {
@@ -110,15 +103,16 @@ void imgui_md::BLOCK_LI(const MD_BLOCK_LI_DETAIL*, bool e)
 	}
 }
 
+// Horizontal line - separator
 void imgui_md::BLOCK_HR(bool e)
 {
 	if (!e) {
 		ImGui::NewLine();
 		ImGui::Separator();
-
 	}
 }
 
+// Headings
 void imgui_md::BLOCK_H(const MD_BLOCK_H_DETAIL* d, bool e)
 {
 	if (e) {
@@ -157,127 +151,77 @@ void imgui_md::BLOCK_HTML(bool)
 
 }
 
-void imgui_md::BLOCK_P(bool)
+// Paragraph
+void imgui_md::BLOCK_P(bool /* e */)
 {
-	if (!m_list_stack.empty())return;
+	if (!m_list_stack.empty()) return;
 	ImGui::NewLine();
 }
 
-void imgui_md::BLOCK_TABLE(const MD_BLOCK_TABLE_DETAIL*, bool e)
+void imgui_md::BLOCK_TABLE(const MD_BLOCK_TABLE_DETAIL* d, bool e)
 {
-	if (e) {
-		m_table_row_pos.clear();
-		m_table_col_pos.clear();
-
-		m_table_last_pos = ImGui::GetCursorPos();
-	} else {
-
+	if (e)
+	{
 		ImGui::NewLine();
 
-		if (m_table_border) {
+		ImGui::PushID(table_id);
+		table_id++;
 
-			m_table_last_pos.y = ImGui::GetCursorPos().y;
-
-			m_table_col_pos.push_back(m_table_last_pos.x);
-			m_table_row_pos.push_back(m_table_last_pos.y);
-
-			const ImVec2 wp = ImGui::GetWindowPos();
-			const ImVec2 sp = ImGui::GetStyle().ItemSpacing;
-			const float wx = wp.x + sp.x / 2;
-			const float wy = wp.y - sp.y / 2 - ImGui::GetScrollY();
-
-			for (int i = 0; i < m_table_col_pos.size(); ++i) {
-				m_table_col_pos[i] += wx;
-			}
-
-			for (int i = 0; i < m_table_row_pos.size(); ++i) {
-				m_table_row_pos[i] += wy;
-			}
-
-			////////////////////////////////////////////////////////////////////
-
-			const ImColor c = ImGui::GetStyle().Colors[ImGuiCol_TextDisabled];
-
-			ImDrawList* dl = ImGui::GetWindowDrawList();
-
-			const float xmin = m_table_col_pos.front();
-			const float xmax = m_table_col_pos.back();
-			for (int i = 0; i < m_table_row_pos.size(); ++i) {
-				const float p = m_table_row_pos[i];
-				dl->AddLine(ImVec2(xmin, p), ImVec2(xmax, p), c,
-					i == 1 && m_table_header_highlight ? 2.0f : 1.0f);
-			}
-
-			const float ymin = m_table_row_pos.front();
-			const float ymax = m_table_row_pos.back();
-			for (int i = 0; i < m_table_col_pos.size(); ++i) {
-				const float p = m_table_col_pos[i];
-				dl->AddLine(ImVec2(p, ymin), ImVec2(p, ymax), c, 1.0f);
-			}
+		callEndTable = ImGui::BeginTable(
+			"table", d->col_count, ImGuiTableFlags_NoSavedSettings | ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg);
+	}
+	else
+	{
+		if (callEndTable)
+		{
+			ImGui::EndTable();
+			ImGui::PopID();
 		}
 	}
-
-
 }
 
+// Enter/exit table header
 void imgui_md::BLOCK_THEAD(bool e)
 {
 	m_is_table_header = e;
-	if (m_table_header_highlight)set_font(e);
+	if (m_table_header_highlight) set_font(e);
+
+	if (!e)
+	{
+		ImGui::TableHeadersRow();
+	}
 }
 
+// Enter/exit table body
 void imgui_md::BLOCK_TBODY(bool e)
 {
 	m_is_table_body = e;
 }
 
+// Enter/exit table row
 void imgui_md::BLOCK_TR(bool e)
 {
-	ImGui::SetCursorPosY(m_table_last_pos.y);
+	if (m_is_table_header) return;
 
-	if (e) {
-		m_table_next_column = 0;
-		ImGui::NewLine();
-		m_table_row_pos.push_back(ImGui::GetCursorPosY());
+	if (e)
+	{
+		ImGui::TableNextRow();
 	}
 }
 
+// Enter/exit table column title
 void imgui_md::BLOCK_TH(const MD_BLOCK_TD_DETAIL* d, bool e)
 {
-	BLOCK_TD(d, e);
 
 }
 
+// Enter/exit table cell
 void imgui_md::BLOCK_TD(const MD_BLOCK_TD_DETAIL*, bool e)
 {
-	if (e) {
-
-		if (m_table_next_column < m_table_col_pos.size()) {
-			ImGui::SetCursorPosX(m_table_col_pos[m_table_next_column]);
-		} else {
-			m_table_col_pos.push_back(m_table_last_pos.x);
-		}
-
-		++m_table_next_column;
-
-		ImGui::Indent(m_table_col_pos[m_table_next_column - 1]);
-		ImGui::SetCursorPos(
-			ImVec2(m_table_col_pos[m_table_next_column - 1], m_table_row_pos.back()));
-
-	} else {
-		const ImVec2 p = ImGui::GetCursorPos();
-		ImGui::Unindent(m_table_col_pos[m_table_next_column - 1]);
-		ImGui::SetCursorPosX(p.x);
-		if (p.y > m_table_last_pos.y)m_table_last_pos.y = p.y;
+	if (e)
+	{
+		ImGui::TableNextColumn();
 	}
-	ImGui::TextUnformatted("");
-
-	if (!m_table_border && e && m_table_next_column==1 ) {
-		ImGui::SameLine(0.0f, 0.0f);
-	} else {
-		ImGui::SameLine();
-	}
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -333,7 +277,6 @@ void imgui_md::SPAN_A(const MD_SPAN_A_DETAIL* d, bool e)
 	set_color(e);
 }
 
-
 void imgui_md::SPAN_EM(bool e)
 {
 	m_is_em = e;
@@ -345,7 +288,6 @@ void imgui_md::SPAN_STRONG(bool e)
 	m_is_strong = e;
 	set_font(e);
 }
-
 
 void imgui_md::SPAN_IMG(const MD_SPAN_IMG_DETAIL* d, bool e)
 {
@@ -391,7 +333,6 @@ void imgui_md::SPAN_CODE(bool)
 
 }
 
-
 void imgui_md::SPAN_LATEXMATH(bool)
 {
 
@@ -422,70 +363,84 @@ void imgui_md::render_text(const char* str, const char* str_end)
 	const ImGuiStyle& s = ImGui::GetStyle();
 	bool is_lf = false;
 
-	while (!m_is_image && str < str_end) {
-
-		const char* te = str_end;
-
-		if (!m_is_table_header) {
-
-			float wl = ImGui::GetContentRegionAvail().x;
-
-			if (m_is_table_body) {
-				wl = (m_table_next_column < m_table_col_pos.size() ?
-					m_table_col_pos[m_table_next_column] : m_table_last_pos.x);
-				wl -= ImGui::GetCursorPosX();
-			}
-
-			te = ImGui::GetFont()->CalcWordWrapPosition(
-				ImGui::GetFontSize(), str, str_end, wl);
-
-			if (te == str)++te;
+	if (!m_is_image && str < str_end)
+	{
+		if (m_is_table_header)
+		{
+			const std::string titolo(str, str_end - str);
+			ImGui::TableSetupColumn(titolo.data());
 		}
+		else
+		{
+			while (str < str_end)
+			{
+				const char *te = str_end;
 
-
-		ImGui::TextUnformatted(str, te);
-
-		if (te > str && *(te - 1) == '\n') {
-			is_lf = true;
-		}
-
-		if (!m_href.empty()) {
-
-			ImVec4 c;
-			if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal)) {
-
-				ImGui::SetTooltip("%s", m_href.c_str());
-
-				c = s.Colors[ImGuiCol_ButtonHovered];
-				if (ImGui::IsMouseReleased(0)) {
-					open_url();
+				if (m_is_table_body)
+				{
+					const std::string testo(str, te - str);
+					ImGui::TextWrapped("%s", testo.data());
 				}
-			} else {
-				c = s.Colors[ImGuiCol_Button];
+				else
+				{
+					const float wrap_width = ImGui::GetContentRegionAvail().x;
+
+					te = ImGui::GetFont()->CalcWordWrapPosition(ImGui::GetFontSize(), str, str_end, wrap_width);
+					if (te == str) ++te;
+
+					ImGui::TextUnformatted(str, te);
+				}
+
+				if (te > str && *(te - 1) == '\n')
+				{
+					is_lf = true;
+				}
+
+				if (!m_href.empty())
+				{
+					ImVec4 c;
+					if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+					{
+						ImGui::SetTooltip("%s", m_href.c_str());
+
+						c = s.Colors[ImGuiCol_TextLink];
+						if (ImGui::IsMouseReleased(0))
+						{
+							open_url();
+						}
+					}
+					else
+					{
+						c = s.Colors[ImGuiCol_TextLink];
+					}
+					line(c, true);
+				}
+				else if (m_is_underline)
+				{
+					line(s.Colors[ImGuiCol_Text], true);
+				}
+				if (m_is_strikethrough)
+				{
+					line(s.Colors[ImGuiCol_Text], false);
+				}
+
+				str = te;
+
+				while (str < str_end && *str == ' ')
+					++str;
 			}
-			line(c, true);
-		}
-		if (m_is_underline) {
-			line(s.Colors[ImGuiCol_Text], true);
-		}
-		if (m_is_strikethrough) {
-			line(s.Colors[ImGuiCol_Text], false);
-		}
 
-		str = te;
-
-		while (str < str_end && *str == ' ')++str;
+			if (!is_lf) ImGui::SameLine(0.0f, 0.0f);
+		}
 	}
-
-	if (!is_lf)ImGui::SameLine(0.0f, 0.0f);
 }
-
 
 bool imgui_md::render_entity(const char* str, const char* str_end)
 {
 	const size_t sz = str_end - str;
 	if (strncmp(str, "&nbsp;", sz) == 0) {
-		ImGui::TextUnformatted(""); ImGui::SameLine();
+		ImGui::TextUnformatted("");
+		ImGui::SameLine();
 		return true;
 	}
 	return false;
@@ -549,7 +504,6 @@ static std::string get_div_class(const char* str, const char* str_end)
 	}
 
 	return d.substr(p, pe - p);
-
 }
 
 bool imgui_md::check_html(const char* str, const char* str_end)
@@ -588,11 +542,10 @@ bool imgui_md::check_html(const char* str, const char* str_end)
 	return false;
 }
 
-
 void imgui_md::html_div(const std::string& dclass, bool e)
 {
 	//Example:
-#if 0
+#if 0 
 	if (dclass == "red") {
 		if (e) {
 			ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
@@ -637,11 +590,6 @@ int imgui_md::text(MD_TEXTTYPE type, const char* str, const char* str_end)
 		break;
 	default:
 		break;
-	}
-
-	if (m_is_table_header) {
-		const float x = ImGui::GetCursorPosX();
-		if (x > m_table_last_pos.x)m_table_last_pos.x = x;
 	}
 
 	return 0;
@@ -752,6 +700,7 @@ int imgui_md::span(MD_SPANTYPE type, void* d, bool e)
 int imgui_md::print(const char* str, const char* str_end)
 {
 	if (str >= str_end)return 0;
+	table_id = 0;
 	return md_parse(str, (MD_SIZE)(str_end - str), &m_md, this);
 }
 
@@ -783,7 +732,6 @@ void imgui_md::get_font(font_info &info) const
 		info.font = g_font_bold;
 	}
 #endif
-
 };
 
 ImVec4 imgui_md::get_color() const
@@ -794,12 +742,11 @@ ImVec4 imgui_md::get_color() const
 	return  ImGui::GetStyle().Colors[ImGuiCol_Text];
 }
 
-
 bool imgui_md::get_image(image_info& nfo) const
 {
 	//Use m_href to identify images
-
-	//Example - Imgui font texture
+	
+	//Example - ImGui font texture
 #ifdef IMGUI_HAS_TEXTURES
 	nfo.texture_id = ImGui::GetIO().Fonts->TexRef.GetTexID();
 #else

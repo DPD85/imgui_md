@@ -3,7 +3,10 @@ Fork of [mekhontsev/imgui_md](https://github.com/mekhontsev/imgui_md) with addit
 
 My changes to Dmitry Mekhontsev library:
 - ImGui dynamic font support;
-- short delay before to show a links tooltip.
+- short delay before to show a links tool-tip;
+- render tables using ImGui specific API instead of draw them in raw way;
+- table columns width no more limited to the header text width;
+- the text inside the table cells wrap if it's to long.
 
 # imgui_md
 Markdown renderer for [Dear ImGui](https://github.com/ocornut/imgui) using [MD4C](https://github.com/mity/md4c) parser.
@@ -29,7 +32,7 @@ imgui_md currently supports the following markdown functionality:
 Most format tags can be mixed!
 
 Current tables limitations:
-  * Width of the columns are defined by header
+  * ~~Width of the columns are defined by header~~
   * Cells are always left aligned
 
 ## Usage

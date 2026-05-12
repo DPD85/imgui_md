@@ -119,7 +119,7 @@ protected:
 	////////////////////////////////////////////////////////////////////////////
 
 	//current state
-	std::string m_href;//empty if no link/image
+	std::string m_href; // empty if no link/image
 
 	bool m_is_underline=false;
 	bool m_is_strikethrough = false;
@@ -129,7 +129,7 @@ protected:
 	bool m_is_table_body = false;
 	bool m_is_image = false;
 	bool m_is_code = false;
-	unsigned m_hlevel=0;//0 - no heading
+	unsigned m_hlevel = 0; // 0 - no heading
 	
 private:
 
@@ -145,11 +145,9 @@ private:
 
 	static void line(ImColor c, bool under);
 
-	//table state
-	int m_table_next_column = 0;
-	ImVec2 m_table_last_pos;
-	std::vector<float> m_table_col_pos;
-	std::vector<float> m_table_row_pos;
+	// Table state
+	bool callEndTable = false;
+	int table_id      = 0;
 
 	//list state
 	struct list_info
