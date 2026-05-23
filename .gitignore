@@ -1,7 +1,9 @@
 # build files
 build/
 
-# vs-code
+# vs-code configuration
 .vscode/
+# CLion configuration
+.idea/
 
 compile_commands.json
