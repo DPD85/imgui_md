@@ -398,20 +398,19 @@ void imgui_md::render_text(const char* str, const char* str_end)
 
 				if (!m_href.empty())
 				{
-					ImVec4 c;
-					if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+					const ImVec4 c = s.Colors[ImGuiCol_TextLink];
+					if (ImGui::IsItemHovered())
 					{
-						ImGui::SetTooltip("%s", m_href.c_str());
-
-						c = s.Colors[ImGuiCol_TextLink];
+						// The click must not wait for the tooltip delay: a link clicked
+						// before the tooltip shows would otherwise be ignored.
 						if (ImGui::IsMouseReleased(0))
 						{
 							open_url();
 						}
-					}
-					else
-					{
-						c = s.Colors[ImGuiCol_TextLink];
+						if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+						{
+							ImGui::SetTooltip("%s", m_href.c_str());
+						}
 					}
 					line(c, true);
 				}
